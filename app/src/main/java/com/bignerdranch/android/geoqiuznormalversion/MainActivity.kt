@@ -34,6 +34,7 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         Log.d(TAG, "OnCreate(Bundle?)called")
         setContentView(R.layout.activity_main)
+        val secondplase = 12
 
 //        val provider: ViewModelProvider = ViewModelProviders.of(this)// здесь должно быть с на конце s.of(this)
 //        val quizViewModel = provider.get(QuizViewModel::class.java)
