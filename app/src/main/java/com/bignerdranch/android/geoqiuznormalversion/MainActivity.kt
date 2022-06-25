@@ -1,5 +1,7 @@
 package com.bignerdranch.android.geoqiuznormalversion
 
+import android.app.Activity
+import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
@@ -14,6 +16,7 @@ import androidx.lifecycle.ViewModelProviders
 
 private const val TAG = "MainActivity"
 private const val KEY_INDEX = "index"
+private const val REQUEST_CODE_CHEAT = 0
 
 
 class MainActivity : AppCompatActivity() {
@@ -23,9 +26,10 @@ class MainActivity : AppCompatActivity() {
     private lateinit var nextButton: ImageButton
     private lateinit var questionTextView: TextView
     private lateinit var prevButton: ImageButton
+    private lateinit var cheatButton: Button
 
 
-    private val quizViewModel:QuizViewModel by lazy {
+    private val quizViewModel: QuizViewModel by lazy {
         ViewModelProviders.of(this).get(QuizViewModel::class.java)
     }
 
@@ -48,6 +52,7 @@ class MainActivity : AppCompatActivity() {
         nextButton = findViewById(R.id.next_button)
         questionTextView = findViewById(R.id.question_text_view)
         prevButton = findViewById(R.id.prev_button)
+        cheatButton = findViewById(R.id.cheat_btn)
 
         trueButton.setOnClickListener { view: View ->
 
@@ -63,19 +68,41 @@ class MainActivity : AppCompatActivity() {
             updateQuestion()
         }
 
-        prevButton.setOnClickListener {
-                quizViewModel.moveToBack()
-                updateQuestion()
-            }
-        updateQuestion()
-}
 
+
+        prevButton.setOnClickListener {
+            quizViewModel.moveToBack()
+            updateQuestion()
+        }
+
+        cheatButton.setOnClickListener {
+            // Начало CheatActivity
+            val answerIsTrue = quizViewModel.currentQuestionAnswer //
+            val intent = CheatActivity.newIntent(this@MainActivity, answerIsTrue)
+            startActivityForResult(intent, REQUEST_CODE_CHEAT)
+        }
+        updateQuestion()
+    }
+
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (resultCode != Activity.RESULT_OK) {
+            return
+        }
+        if (requestCode == REQUEST_CODE_CHEAT) {
+            quizViewModel.isCheater = data?.getBooleanExtra(EXTRA_ANSWER_SHOWN, false) ?: false
+        }
+
+
+    }
 
 
     override fun onStart() {// функция обратного вызова
         super.onStart()//обязательная строчка, которая должна идти второй по счету
         Log.d(TAG, "OnStart called")
     }
+
     override fun onResume() {
         super.onResume()
         Log.d(TAG, "OnResume called")
@@ -99,14 +126,10 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-
     override fun onDestroy() {
         super.onDestroy()
         Log.d(TAG, "OnDestroy called")
     }
-
-
-
 
 
     private fun updateQuestion() {
@@ -115,23 +138,19 @@ class MainActivity : AppCompatActivity() {
     }
 
 
-    private fun checkAnswer(userAnswer: Boolean){
+    private fun checkAnswer(userAnswer: Boolean) {
         val correctAnswer = quizViewModel.currentQuestionAnswer
-        val messageResId = if (userAnswer == correctAnswer){
-            R.string.correct_toast}
-        else{
-            R.string.incorrect_toast
+        val messageResId = when {
+            quizViewModel.isCheater -> R.string.judgment_toast
+            else -> R.string.incorrect_toast
         }
-            Toast.makeText(
-                this,
-                messageResId,
-                Toast.LENGTH_SHORT
-            ).show()
+        Toast.makeText(
+            this,
+            messageResId,
+            Toast.LENGTH_SHORT
+        ).show()
 
     }
 
 
-
-
-
-    }
+}

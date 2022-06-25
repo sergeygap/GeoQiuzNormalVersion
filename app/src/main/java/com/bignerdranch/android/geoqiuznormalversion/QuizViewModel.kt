@@ -10,7 +10,7 @@ class QuizViewModel: ViewModel() {
 
 
 
-
+    var isCheater = false
     var currentIndex = 0
 
     private val questionBank = listOf( // список объектов
